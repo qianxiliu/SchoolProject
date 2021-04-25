@@ -17,9 +17,72 @@ namespace SchoolProject.Controllers
 
         //static string "https://opendata.arcgis.com/datasets/a15e8731a17a46aabc452ea607f172c0_0.geojson";
 
+//Qianxi
+
+        HttpClient httpClient;
+
+        static string BASE_URL = "https://developer.nps.gov/api/v1/";
+        static string API_KEY = "MK0jIRuFSvPvWyoMXcN209Jj16DfwRMOWfB9KCFL"; //Add your API key here inside ""
+
+        //static string BASE_URL = "https://opendata.arcgis.com/datasets/a15e8731a17a46aabc452ea607f172c0_0.geojson";
+        // Obtaining the API key is easy. The same key should be usable across the entire
+        // data.gov developer network, i.e. all data sources on data.gov.
+
+
         public AppDbContext dbContext; // linking db context to our controller
 
-        public HomeController(AppDbContext context) //linking our controller to the dbcontext for link commands
+        public async Task<IActionResult> Index()
+        {
+            httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Accept.Clear();
+            httpClient.DefaultRequestHeaders.Add("X-Api-Key", API_KEY);
+            httpClient.DefaultRequestHeaders.Accept.Add(
+                new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            //string NATIONAL_PARK_API_PATH = BASE_URL + "/parks?limit=20";
+            string schoolData = "https://opendata.arcgis.com/datasets/a15e8731a17a46aabc452ea607f172c0_0.geojson";
+
+            schoolData school = null;
+
+            //httpClient.BaseAddress = new Uri(NATIONAL_PARK_API_PATH);
+            httpClient.BaseAddress = new Uri(BASE_URL);
+
+            try
+            {
+                //HttpResponseMessage response = httpClient.GetAsync(NATIONAL_PARK_API_PATH)
+                //                                        .GetAwaiter().GetResult();
+                HttpResponseMessage response = httpClient.GetAsync(BASE_URL)
+                                                        .GetAwaiter().GetResult();
+
+
+
+                if (response.IsSuccessStatusCode)
+                {
+                    schoolData = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                }
+
+                if (!schoolData.Equals(""))
+                {
+                    // JsonConvert is part of the NewtonSoft.Json Nuget package
+                    school = JsonConvert.DeserializeObject<school>(schoolData);
+                }
+
+                dbContext.school.Add(school);
+                await dbContext.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                // This is a useful place to insert a breakpoint and observe the error message
+                Console.WriteLine(e.Message);
+            }
+
+            return View(SchoolView);
+        }
+    
+
+
+
+public HomeController(AppDbContext context) //linking our controller to the dbcontext for link commands
         {
             dbContext = context;
             //context.Database.EnsureCreated();
@@ -61,6 +124,13 @@ namespace SchoolProject.Controllers
         }
         //// was put here by default
 
+//QX
+        public IActionResult aboutUs()
+        {
+            return View(aboutUs);
+        }
+        //// was put here by default
+
 
         //shows all students
         public IActionResult StudentView()
@@ -77,6 +147,10 @@ namespace SchoolProject.Controllers
 
             return View(schoolData);
         }
+
+
+
+
 
 
 
